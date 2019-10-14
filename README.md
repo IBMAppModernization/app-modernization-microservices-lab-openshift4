@@ -137,7 +137,7 @@ In this part  you'll install the prereqs step by step before installing the Stoc
    oc get pods
    ```
 
-...The output should show pods for MariaDB and Mongo and they both should be running and in the READY state
+   The output should show pods for MariaDB and Mongo and they both should be running and in the READY state
 
    ```
        NAME              READY     STATUS    RESTARTS   AGE
