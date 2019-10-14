@@ -52,14 +52,14 @@ The **stock-quote** service queries an external service to get real time stock q
 Like a typical  Kubernetes app, Stock Trader use secrets and ConfigMaps to store information needed by one  or more microservices to access external  services and other microservices. We've  provided that info in a file hosted in Cloud Storage and there is a script that you'll use to retrieve it.
 
 
-1. From a terminal window clone the Github repo that has everything needed to deploy the aggregated Stock Trader app.
+1.1 From a terminal window clone the Github repo that has everything needed to deploy the aggregated Stock Trader app.
 ```
    git clone https://github.com/IBMStockTraderLite/stocktrader-openshift.git
    cd stocktrader-openshift
 
    ```
 
-2. Retrieve credentials and other details needed to create secrets and/or ConfigMaps. Ask you instructor for the **SETUPURL** and **STUDENTID** values needed as parameters in the command below.
+1.2 Retrieve credentials and other details needed to create secrets and/or ConfigMaps. Ask you instructor for the **SETUPURL** and **STUDENTID** values needed as parameters in the command below.
 
    ```bash
    # Note you must be in the scripts sub folder or this command will fail
@@ -69,7 +69,7 @@ Like a typical  Kubernetes app, Stock Trader use secrets and ConfigMaps to store
    ./setupLab.sh SETUPURL STUDENTID
    ```
 
-3. Verify that the output looks something like the following:
+1.3 Verify that the output looks something like the following:
 
    ```
     Script being run from correct folder
@@ -83,55 +83,55 @@ Like a typical  Kubernetes app, Stock Trader use secrets and ConfigMaps to store
     Setup completed successfully
    ```
 
-4. Also verify that there is now a file called **variables.sh** in the current folder
+1.4 Also verify that there is now a file called **variables.sh** in the current folder
 
 ###  Step 2: Install all the prereq
 
 In this part  you'll install the prereqs step by step before installing the Stock Trader application.
 
-1. Install MariaDB by running the following command. Verify that no errors are displayed by the installation script.
+2.1 Install MariaDB by running the following command. Verify that no errors are displayed by the installation script.
 
    ```
    ./setupMariaDB.sh
 
    ```
 
-2. Install Mongo by running the following command. Verify that no errors are displayed by the installation script.
+2.2 Install Mongo by running the following command. Verify that no errors are displayed by the installation script.
 
    ```
    ./setupMongo.sh
 
    ```
 
-3. Create the DNS Proxy and store all the  access information as secrets  for the  external Kafka installation. Verify that no errors are displayed by the script.
+2.3 Create the DNS Proxy and store all the  access information as secrets  for the  external Kafka installation. Verify that no errors are displayed by the script.
 
    ```
    ./setupKafka.sh
 
    ```
 
-4. Store all the  access information as secrets for the API Connect proxy to the external  realtime stock quote . Verify that no errors are displayed by the script.
+2.4 Store all the  access information as secrets for the API Connect proxy to the external  realtime stock quote . Verify that no errors are displayed by the script.
 
    ```
    ./setupAPIConnect.sh
 
    ```
 
-5. Store all the  access information as secrets for the  external  Watson Tone Analyzer service . Verify that no errors are displayed by the script.
+2.5 Store all the  access information as secrets for the  external  Watson Tone Analyzer service . Verify that no errors are displayed by the script.
 
    ```
    ./setupWatson.sh
 
    ```
 
-6. Initialize the MariaDB transactional database with some data. Verify that no errors are displayed by the script.
+2.6 Initialize the MariaDB transactional database with some data. Verify that no errors are displayed by the script.
 
    ```
    ./initDatabase.sh
 
    ```
 
-7. Verify your progress so far. Run the following to see the pods you have so far
+2.7 Verify your progress so far. Run the following to see the pods you have so far
 
    ```
    oc get pods
@@ -145,13 +145,13 @@ In this part  you'll install the prereqs step by step before installing the Stoc
      mongodb-1-gqpln   1/1       Running   0          2m
    ```
 
-8. Next look at your services
+2.8 Next look at your services
 
    ```
    oc get svc
    ```
 
-8. Verify that the output shows services for Mongo, MariaDB and your DNS proxy to Kafka
+2.9 Verify that the output shows services for Mongo, MariaDB and your DNS proxy to Kafka
 
   ```  
   NAME              TYPE           CLUSTER-IP      EXTERNAL-IP                                                                 
@@ -164,25 +164,25 @@ In this part  you'll install the prereqs step by step before installing the Stoc
 
 In this part  you'll install all the Stock Trader microservices using a template  for all the microservices. Note that all the  microservices require some of the information stored via secrets in the scripts you ran in the previous section.
 
-1. Go back to the top level folder of the  cloned repo
+3.1 Go back to the top level folder of the  cloned repo
 
    ```
    cd ..
    ```
 
-2. Install the microservices chart. Verify that no errors are displayed
+3.2 Install the microservices chart. Verify that no errors are displayed
 
    ```
    oc process -f templates/stock-trader.yaml | oc create -f -
    ```
 
-3. Verify that all the pods are running and are in the READY state. Note you may have to run this command multiple times before all the pods become READY.
+3.3 Verify that all the pods are running and are in the READY state. Note you may have to run this command multiple times before all the pods become READY.
 
    ```
    oc get pods
    ```
 
-4. Keep running the command  until the output looks something like this:
+3.4 Keep running the command  until the output looks something like this:
 
    ```
      NAME                             READY     STATUS    RESTARTS   AGE
@@ -195,13 +195,13 @@ In this part  you'll install all the Stock Trader microservices using a template
    tradr-1-qdps9                    1/1       Running   0          2m
    ```
 
-5. The app uses OpenShift routes to provide access outside of the cluster. Use the following command to get the external hostnames you'll need to access Stock Trader.
+3.5 The app uses OpenShift routes to provide access outside of the cluster. Use the following command to get the external hostnames you'll need to access Stock Trader.
 
    ```
    oc  get routes
    ```
 
-6. Verify the output looks something like the following. The value in the  HOST/PORT column is the common hostname used for all the  microservices. The value in the PATH column is the unique path for each microservice.
+3.6 Verify the output looks something like the following. The value in the  HOST/PORT column is the common hostname used for all the  microservices. The value in the PATH column is the unique path for each microservice.
 
    ```
    NAME            HOST/PORT                                                     PATH             SERVICES           
@@ -216,11 +216,11 @@ In this example the URL for the **tradr** UI is http://stocktrader-microservices
 
 In this part you'll verify that the various microservices are working as designed.
 
-1. Bring up the **tradr** web application using the  hostname you noted at the end of the  previous  section
+4.1 Bring up the **tradr** web application using the  hostname you noted at the end of the  previous  section
 
 ![Login page](images/ss1.png)
 
-2. Log in with the following credentials (note these are the only values that will work)
+4.2 Log in with the following credentials (note these are the only values that will work)
 
    ```
    username:  stock
@@ -229,25 +229,25 @@ In this part you'll verify that the various microservices are working as designe
 
 ![Dashboard](images/ss2.png)
 
-3. Click **Add Client** and name the client `Client2`. Click **OK**
+4.3 Click **Add Client** and name the client `Client2`. Click **OK**
 
 ![Dashboard](images/ss3.png)
 
-4. Click on the link in the **Name** column to see the  details of Client2
+4.4 Click on the link in the **Name** column to see the  details of Client2
 
-5. Do 3 or 4 "Buy" operations with different stock tickers (e.g. STT, T, GOOG, IBM).
+4.5 Do 3 or 4 "Buy" operations with different stock tickers (e.g. STT, T, GOOG, IBM).
 
 ![Dashboard](images/ss4.png)
 
-6. Sell part of one of the holdings you just bought and verify that the table is updated appropriately
+4.6 Sell part of one of the holdings you just bought and verify that the table is updated appropriately
 
-7. Click on **Feedback** and submit some client feedback. If the client sounds really angry they'll get 3 free trades otherwise they'll get one free trade.
+4.7 Click on **Feedback** and submit some client feedback. If the client sounds really angry they'll get 3 free trades otherwise they'll get one free trade.
 
 ![Feedback](images/ss5.png)
 
-8. Verify that the data flow of `portfolio->Kafka->event-consumer->trade-history-Mongo` works by querying the **trade-history*** service via an endpoint  that makes it do a Mongo query.  Add the path `/trades/Client2` to the  route for the **trade-history** microservice. For example `http://stocktrader-microservices.apps.ocp.kubernetes-workshops.com/trade-history/trades/Client2` for the route used in the example above.
+4.8 Verify that the data flow of `portfolio->Kafka->event-consumer->trade-history-Mongo` works by querying the **trade-history** service via an endpoint  that makes it do a Mongo query.  Add the path `/trades/Client2` to the  route for the **trade-history** microservice. For example `http://stocktrader-microservices.apps.ocp.kubernetes-workshops.com/trade-history/trades/Client2` for the route used in the example above.
 
-9. Enter the URL in another browser tab and verify that the history has captured  all the  trades you did while testing. A partial screen shot of what you should get back is shown below:
+4.9 Enter the URL in another browser tab and verify that the history has captured  all the  trades you did while testing. A partial screen shot of what you should get back is shown below:
 
 ![Trade History](images/ss6.png)
 
