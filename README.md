@@ -153,12 +153,12 @@ In this part  you'll install the prereqs step by step before installing the Stoc
 
 8. Verify that the output shows services for Mongo, MariaDB and your DNS proxy to Kafka
 
-   ```
-   NAME              TYPE           CLUSTER-IP      EXTERNAL-IP                                                                 
-kafka-dns-proxy   ExternalName   <none>          broker-0-0mqz41lc21pr467x.kafka.svc01.us-south.eventstreams.cloud.ibm.com   
-mariadb           ClusterIP      172.30.103.15   <none>                                                                      
-mongodb           ClusterIP      172.30.235.11   <none>                                                                      
-   ```
+  ```  
+  NAME              TYPE           CLUSTER-IP      EXTERNAL-IP                                                                 
+  kafka-dns-proxy   ExternalName   <none>          broker-0-0mqz41lc21pr467x.kafka.svc01.us-south.eventstreams.cloud.ibm.com   
+  mariadb           ClusterIP      172.30.103.15   <none>                                                                      
+  mongodb           ClusterIP      172.30.235.11   <none>                                                                      
+  ```
 
 ###  Step 3: Install the StockTrader app
 
