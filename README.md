@@ -1,22 +1,21 @@
-
 # IBM Client Developer Advocacy App Modernization Series
 
 ## Lab - Deploying Microservices
 
-### Deploying and testing the IBM Stock Trader sample application in  OpenShift
-
+### Deploying and testing the IBM Stock Trader sample application in OpenShift
 
 ## Overview
 
 In this lab you will deploy and test the *IBM Stock Trader application* on Red Hat OpenShift.
 
-The *IBM Stock Trader*  application is a simple stock trading sample, where you can create various stock portfolios and add shares of stock to each for a commission. It keeps track of each porfolio’s total value and its loyalty level, which affect the commission charged per transaction. It also lets you submit feedback on the application, which can result in earning free (zero commission) trades, based on the tone of the feedback. (Tone is determined by calling the Watson Tone Analyzer).
+The *IBM Stock Trader* application is a simple stock trading sample, where you can create various stock portfolios and add shares of stock to each for a commission. It keeps track of each porfolio’s total value and its loyalty level, which affect the commission charged per transaction. It also lets you submit feedback on the application, which can result in earning free (zero commission) trades, based on the tone of the feedback. (Tone is determined by calling the Watson Tone Analyzer).
 
 The architecture of the  app is shown below:
 
 ![Architecture diagram](images/microservices-architecture.png)
 
 The **portfolio** microservice sits at the center of the application. This microservice;
+
 * persists trade data  using JDBC to a MariaDB database
 * invokes the **stock-quote** service that invokes an API defined in API Connect in the public IBM Cloud to get stock quotes
 * invokes the Tone Analyzer service in the public IBM Cloud to analyze the tone of submitted feedback
@@ -35,43 +34,48 @@ The **stock-quote** service queries an external service to get real time stock q
 
 1. Login into the OpenShift web console using the user credentials provided to you
 
-2. From the OpenShift web console click on your username in the upper right and select **Copy Login Command**
+1. From the OpenShift web console click on your username in the upper right and select **Copy Login Command**
 
-![Copy Login Command](images/ss0.png)
+    ![Copy Login Command](images/ss0.png)
 
-3. Paste the login command in a terminal window and run it (Note: leave the web console browser tab open as you'll need it later on in the lab)
+1. Paste the login command in a terminal window and run it (Note: leave the web console browser tab open as you'll need it later on in the lab)
 
-4. Create a new OpenShift project for this lab (Note: your project name must be unique. We suggest you use msvcs-usernnn where usernnn is your student id for the project name e.g. user012)
+1. Set an environment variable for your *studentid* based on your user identifier from the instructor (e.g. **user001**)
 
-```
-  oc new-project [YOUR PROJECT NAME]
-```
+    ```bash
+    export STUDENTID=userNNN
+    ```
 
-###  Step 1: Prepare for installation
+1. Create a new OpenShift project for this lab
+
+   ```bash
+   oc new-project mcsvcs-$STUDENTID
+   ```
+
+### Step 1: Prepare for installation
 
 Like a typical  Kubernetes app, Stock Trader use secrets and ConfigMaps to store information needed by one  or more microservices to access external  services and other microservices. We've  provided that info in a file hosted in Cloud Storage and there is a script that you'll use to retrieve it.
 
-
 1.1 From a terminal window clone the Github repo that has everything needed to deploy the aggregated Stock Trader app.
-```
+
+   ```bash
    git clone https://github.com/IBMStockTraderLite/stocktrader-openshift.git
    cd stocktrader-openshift
-
    ```
 
-1.2 Retrieve credentials and other details needed to create secrets and/or ConfigMaps. Ask you instructor for the **SETUPURL** and **STUDENTID** values needed as parameters in the command below.
+1.2 Retrieve credentials and other details needed to create secrets and/or ConfigMaps. Ask you instructor for the **SETUPURL** for the command below.
 
    ```bash
    # Note you must be in the scripts sub folder or this command will fail
-   cd scripts   
+   cd scripts
 
    # Your instructor will provide your with values for SETUPURL adn  STUDENID
-   ./setupLab.sh SETUPURL STUDENTID
+   ./setupLab.sh SETUPURL $STUDENTID
    ```
 
 1.3 Verify that the output looks something like the following:
 
-   ```
+   ```console
     Script being run from correct folder
     Validating URL to setup files ...
     Validating student id  ...
@@ -85,107 +89,106 @@ Like a typical  Kubernetes app, Stock Trader use secrets and ConfigMaps to store
 
 1.4 Also verify that there is now a file called **variables.sh** in the current folder
 
-###  Step 2: Install all the prereq
+### Step 2: Install all the prereq
 
 In this part  you'll install the prereqs step by step before installing the Stock Trader application.
 
 2.1 Install MariaDB by running the following command. Verify that no errors are displayed by the installation script.
 
-   ```
+   ```bash
    ./setupMariaDB.sh
-
    ```
 
 2.2 Install Mongo by running the following command. Verify that no errors are displayed by the installation script.
 
-   ```
+   ```bash
    ./setupMongo.sh
 
    ```
 
 2.3 Create the DNS Proxy and store all the  access information as secrets  for the  external Kafka installation. Verify that no errors are displayed by the script.
 
-   ```
+   ```bash
    ./setupKafka.sh
 
    ```
 
 2.4 Store all the  access information as secrets for the API Connect proxy to the external  realtime stock quote . Verify that no errors are displayed by the script.
 
-   ```
+   ```bash
    ./setupAPIConnect.sh
 
    ```
 
 2.5 Store all the  access information as secrets for the  external  Watson Tone Analyzer service . Verify that no errors are displayed by the script.
 
-   ```
+   ```bash
    ./setupWatson.sh
 
    ```
 
-2.6 Initialize the MariaDB transactional database with some data. Verify that no errors are displayed by the script.
+2.6 Verify your progress so far. Run the following to see the pods you have so far
 
-   ```
-   ./initDatabase.sh
-
-   ```
-
-2.7 Verify your progress so far. Run the following to see the pods you have so far
-
-   ```
+   ```bash
    oc get pods
    ```
 
    The output should show pods for MariaDB and Mongo and they both should be running and in the READY state
 
-   ```
+   ```console
        NAME              READY     STATUS    RESTARTS   AGE
      mariadb-1-shzjl   1/1       Running   0          2m
      mongodb-1-gqpln   1/1       Running   0          2m
    ```
 
-2.8 Next look at your services
+2.7 Initialize the MariaDB transactional database with some data. Verify that no errors are displayed by the script.
+
+   ```text
+   ./initDatabase.sh
 
    ```
+
+2.8 Next look at your services
+
+   ```bash
    oc get svc
    ```
 
 2.9 Verify that the output shows services for Mongo, MariaDB and your DNS proxy to Kafka
 
-  ```  
-  NAME              TYPE           CLUSTER-IP      EXTERNAL-IP                                                                 
-  kafka-dns-proxy   ExternalName   <none>          broker-0-0mqz41lc21pr467x.kafka.svc01.us-south.eventstreams.cloud.ibm.com   
-  mariadb           ClusterIP      172.30.103.15   <none>                                                                      
-  mongodb           ClusterIP      172.30.235.11   <none>                                                                      
+  ```console
+  NAME              TYPE           CLUSTER-IP      EXTERNAL-IP
+  kafka-dns-proxy   ExternalName   <none>          broker-0-0mqz41lc21pr467x.kafka.svc01.us-south.eventstreams.cloud.ibm.com
+  mariadb           ClusterIP      172.30.103.15   <none>
+  mongodb           ClusterIP      172.30.235.11   <none>
   ```
 
-###  Step 3: Install the StockTrader app
+### Step 3: Install the StockTrader app
 
 In this part  you'll install all the Stock Trader microservices using a template  for all the microservices. Note that all the  microservices require some of the information stored via secrets in the scripts you ran in the previous section.
 
 3.1 Go back to the top level folder of the  cloned repo
 
-   ```
+   ```bash
    cd ..
    ```
 
 3.2 Install the microservices chart. Verify that no errors are displayed
 
-   ```
+   ```bash
    oc process -f templates/stock-trader.yaml | oc create -f -
    ```
 
 3.3 Verify that all the pods are running and are in the READY state. Note you may have to run this command multiple times before all the pods become READY.
 
-   ```
+   ```bash
    oc get pods
    ```
 
 3.4 Keep running the command  until the output looks something like this:
 
-   ```
-     NAME                             READY     STATUS    RESTARTS   AGE
+   ```console
+   NAME                             READY     STATUS    RESTARTS   AGE
    event-streams-consumer-1-455pj   1/1       Running   0          2m
    mariadb-1-shzjl                  1/1       Running   0          2d
    mongodb-1-gqpln                  1/1       Running   0          2d
@@ -197,33 +200,34 @@ In this part  you'll install all the Stock Trader microservices using a template
 
 3.5 The app uses OpenShift routes to provide access outside of the cluster. Use the following command to get the external hostnames you'll need to access Stock Trader.
 
-   ```
+   ```bash
    oc  get routes
    ```
 
 3.6 Verify the output looks something like the following. The value in the  HOST/PORT column is the common hostname used for all the  microservices. The value in the PATH column is the unique path for each microservice.
 
+   ```console
+   NAME            HOST/PORT                                                     PATH             SERVICES
+   portfolio       stocktrader-microservices.apps.ocp.kubernetes-workshops.com   /portfolio       portfolio
+   stockquote      stocktrader-microservices.apps.ocp.kubernetes-workshops.com   /stock-quote     stockquote
+   trade-history   stocktrader-microservices.apps.ocp.kubernetes-workshops.com   /trade-history   trade-history
+   tradr           stocktrader-microservices.apps.ocp.kubernetes-workshops.com   /tradr           tradr
    ```
-   NAME            HOST/PORT                                                     PATH             SERVICES           
-   portfolio       stocktrader-microservices.apps.ocp.kubernetes-workshops.com   /portfolio       portfolio       
-   stockquote      stocktrader-microservices.apps.ocp.kubernetes-workshops.com   /stock-quote     stockquote      
-   trade-history   stocktrader-microservices.apps.ocp.kubernetes-workshops.com   /trade-history   trade-history   
-   tradr           stocktrader-microservices.apps.ocp.kubernetes-workshops.com   /tradr           tradr           
-   ```
+
 In this example the URL for the **tradr** UI is http://stocktrader-microservices.apps.ocp.kubernetes-workshops.com/tradr (the common hostname plus the PATH for **tradr**).
 
 ## Step 4: Test the app
 
 In this part you'll verify that the various microservices are working as designed.
 
-4.1 Bring up the **tradr** web application using the  hostname you noted at the end of the  previous  section
+4.1 Bring up the **tradr** web application using the hostname you noted at the end of the  previous  section
 
 ![Login page](images/ss1.png)
 
 4.2 Log in with the following credentials (note these are the only values that will work)
 
-   ```
-   username:  stock
+   ```text
+   username: stock
    password: trader
    ```
 
@@ -251,14 +255,13 @@ In this part you'll verify that the various microservices are working as designe
 
 ![Trade History](images/ss6.png)
 
-
 ## Cleanup
 
 Free up resources for subsequent labs by deleting the Stock Trader app.
 
 1. Run the following commands to cleanup (note: you can copy all the commands at once and post then into you command window)
 
-   ```
+   ```bash
    cd scripts
    oc delete all,routes --selector app=stock-trader
    ./cleanupWatson.sh
@@ -269,6 +272,6 @@ Free up resources for subsequent labs by deleting the Stock Trader app.
    cd -
    ```
 
-
 ## Summary
+
 You installed and then tested the  Stock Trader microservices sample application and got some insight into the challenges of deploying microservices apps in an OpenShift cluster.
