@@ -263,7 +263,7 @@ Free up resources for subsequent labs by deleting the Stock Trader app.
 
    ```bash
    cd scripts
-   oc delete all,routes --selector app=stock-trader
+   oc delete svc,dc,rc,route --selector app=stock-trader
    ./cleanupWatson.sh
    ./cleanupAPIConnect.sh
    ./cleanupKafka.sh
