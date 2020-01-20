@@ -32,13 +32,25 @@ The **stock-quote** service queries an external service to get real time stock q
 
 ## Setup
 
-1. Login into the OpenShift web console using the user credentials provided to you
+1. Login into the OpenShift web console using the user credentials provided to you.
+   * Access the OpenShift console via the url link provided by the workshop instructors
+   * Select `dragonslayer-ldap` login option
+   ![Login options](images/openshift_login_options.png)
+   * Login with the username and password provided by the workshop instructors
 
 1. From the OpenShift web console click on your username in the upper right and select **Copy Login Command**
 
     ![Copy Login Command](images/ss0.png)
 
+1. You are prompted to login to the OpenShift console again. Repeat the same login procedure above to login.
+
+1. Click **Display Token** link.
+
+1. Copy the contents in the field **Log in with this token**. It provides a valid login command with an alive token.
+
 1. Paste the login command in a terminal window and run it (Note: leave the web console browser tab open as you'll need it later on in the lab)
+
+1. If prompted with `Use insecure connections? (y/n):`, enter **y**.
 
 1. Set an environment variable for your *studentid* based on your user identifier from the instructor (e.g. **user001**)
 
@@ -59,8 +71,8 @@ Like a typical  Kubernetes app, Stock Trader use secrets and ConfigMaps to store
 1.1 From a terminal window clone the Github repo that has everything needed to deploy the aggregated Stock Trader app.
 
    ```bash
-   git clone https://github.com/IBMStockTraderLite/stocktrader-openshift.git
-   cd stocktrader-openshift
+   git clone https://github.com/IBMStockTraderLite/stocktrader-openshift4.git
+   cd stocktrader-openshift4
    ```
 
 1.2 Retrieve credentials and other details needed to create secrets and/or ConfigMaps. Ask you instructor for the **SETUPURL** for the command below.
@@ -263,7 +275,7 @@ Free up resources for subsequent labs by deleting the Stock Trader app.
 
    ```bash
    cd scripts
-   oc delete svc,dc,rc,route --selector app=stock-trader
+   oc delete all,routes --selector app=stock-trader
    ./cleanupWatson.sh
    ./cleanupAPIConnect.sh
    ./cleanupKafka.sh
